@@ -1,0 +1,5 @@
+{
+  "name": "CaseBuddy Intelligent OCR",
+  "description": "High-precision OCR extraction tool for legal documents and images, featuring batch folder processing, cloud import, and automated integration with CaseBuddy.",
+  "requestFramePermissions": []
+}
