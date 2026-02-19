@@ -112,7 +112,7 @@ const DocumentList: React.FC<Props> = ({
       </div>
       
       <div className="p-3 border-t border-slate-200 bg-white text-[10px] text-slate-400 text-center flex flex-col">
-        <span>Powered by Gemini 3.0 Pro</span>
+        <span>Powered by Gemini 2.0 Flash</span>
       </div>
     </div>
   );

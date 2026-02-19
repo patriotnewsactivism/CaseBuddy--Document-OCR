@@ -16,5 +16,5 @@ export const ACCEPTED_FILE_TYPES = [
   "image/webp"
 ];
 
-// Using the complex text model for higher accuracy on documents
-export const OCR_MODEL_NAME = "gemini-3-pro-preview"; 
+// Using Gemini 1.5 Pro for high accuracy on document OCR
+export const OCR_MODEL_NAME = "gemini-2.0-flash";

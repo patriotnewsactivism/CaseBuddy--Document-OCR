@@ -18,9 +18,9 @@ const processFileToBase64 = (file: File): Promise<string> => {
 };
 
 export const performOCR = async (file: File): Promise<ExtractedData> => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("API Key not found. Please check your environment configuration.");
+    throw new Error("API Key not found. Please set VITE_GEMINI_API_KEY in your .env.local file.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -44,7 +44,7 @@ export const performOCR = async (file: File): Promise<ExtractedData> => {
 
   try {
     const response = await ai.models.generateContent({
-      model: OCR_MODEL_NAME, // gemini-3-pro-preview
+      model: OCR_MODEL_NAME,
       contents: {
         parts: [
           {
