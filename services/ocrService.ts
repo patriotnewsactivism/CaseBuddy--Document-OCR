@@ -1,5 +1,34 @@
 import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
 import { ExtractedData } from '../types';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+const pdfToImages = async (file: File): Promise<Blob[]> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const images: Blob[] = [];
+  
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const scale = 2;
+    const viewport = page.getViewport({ scale });
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d')!;
+    
+    await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+    
+    const blob = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((b) => resolve(b!), 'image/png');
+    });
+    images.push(blob);
+  }
+  
+  return images;
+};
 
 const extractDates = (text: string): string[] => {
   const datePatterns = [
@@ -58,21 +87,40 @@ const generateSummary = (text: string): string => {
 
 export const performOCR = async (file: File): Promise<ExtractedData> => {
   try {
-    const result = await Tesseract.recognize(file, 'eng', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+    let imagesToProcess: Blob[] = [];
+    
+    if (file.type === 'application/pdf') {
+      console.log('Converting PDF to images...');
+      imagesToProcess = await pdfToImages(file);
+    } else {
+      imagesToProcess = [file];
+    }
+    
+    let allText = '';
+    let totalConfidence = 0;
+    
+    for (let i = 0; i < imagesToProcess.length; i++) {
+      console.log(`Processing page ${i + 1}/${imagesToProcess.length}...`);
+      
+      const result = await Tesseract.recognize(imagesToProcess[i], 'eng', {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            console.log(`OCR Progress (page ${i + 1}): ${Math.round(m.progress * 100)}%`);
+          }
         }
-      }
-    });
-
-    const rawText = result.data.text.trim();
+      });
+      
+      allText += result.data.text + '\n\n';
+      totalConfidence += result.data.confidence;
+    }
+    
+    const rawText = allText.trim();
     
     if (!rawText) {
       throw new Error("No text could be extracted from the document.");
     }
 
-    const confidenceScore = Math.round(result.data.confidence);
+    const confidenceScore = Math.round(totalConfidence / imagesToProcess.length);
     
     return {
       rawText,
