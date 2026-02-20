@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DocumentAsset, ProcessingStatus, IntegrationConfig, SourceType } from './types';
 import { DEFAULT_INTEGRATION_CONFIG, ACCEPTED_FILE_TYPES } from './constants';
-import { performOCR } from './services/geminiService';
+import { performOCR } from './services/ocrService';
 import DocumentList from './components/DocumentList';
 import DocumentViewer from './components/DocumentViewer';
 import ExtractionPanel from './components/ExtractionPanel';
